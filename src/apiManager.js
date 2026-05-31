@@ -301,12 +301,8 @@ export default class ApiManager {
     const currentCharges = Math.min(data.current + chargesGained, data.max);
     const chargesText = `${Math.floor(currentCharges)}/${data.max}`;
     
-// Calculate current charges (increases over time)
-    const chargesGained = Math.floor(elapsed / data.cooldownMs);
-    const currentCharges = Math.min(data.current + chargesGained, data.max);
-    const chargesText = `${Math.floor(currentCharges)}/${data.max}`;
     
-    // 🆕 Berechne das Datum + Uhrzeit
+    // Berechne das Datum + Uhrzeit
     const fullChargeTime = new Date(Date.now() + remainingMs);
     const dateTimeString = fullChargeTime.toLocaleString('de-DE', {
       year: 'numeric',
