@@ -255,67 +255,74 @@ export default class ApiManager {
    * @param {Overlay} overlay - The Overlay class instance
    * @since 1.0.0
    */
-  updateFullChargeDisplay(overlay) {
-    if (!window.skirkChargeData) return;
+updateFullChargeDisplay(overlay) {
+  if (!window.skirkChargeData) return;
+  
+  const data = window.skirkChargeData;
+  const elapsed = Date.now() - data.startTime;
+  const remainingMs = Math.max(0, data.timeToFull - elapsed);
+  
+  // If already at full charges
+  if (data.current >= data.max || remainingMs <= 0) {
+    overlay.updateInnerHTML('bm-user-fullcharge-content', `Full Charge in <b style="color: #10b981;">FULL</b>`);
     
-    const data = window.skirkChargeData;
-    const elapsed = Date.now() - data.startTime;
-    const remainingMs = Math.max(0, data.timeToFull - elapsed);
+    // Apply visibility setting
+    try {
+      const show = JSON.parse(localStorage.getItem('bmShowFullCharge') ?? 'true');
+      const el = document.getElementById('bm-user-fullcharge');
+      if (el) el.style.display = show ? '' : 'none';
+    } catch(_) {}
     
-    // If already at full charges
-    if (data.current >= data.max || remainingMs <= 0) {
-      overlay.updateInnerHTML('bm-user-fullcharge-content', `Full Charge in <b style="color: #10b981;">FULL</b>`);
-      
-      // Apply visibility setting
-      try {
-        const show = JSON.parse(localStorage.getItem('bmShowFullCharge') ?? 'true');
-        const el = document.getElementById('bm-user-fullcharge');
-        if (el) el.style.display = show ? '' : 'none';
-      } catch(_) {}
-      
-      // Clear interval when full
-      if (window.skirkChargeInterval) {
-        clearInterval(window.skirkChargeInterval);
-        window.skirkChargeInterval = null;
-      }
-      return;
+    // Clear interval when full
+    if (window.skirkChargeInterval) {
+      clearInterval(window.skirkChargeInterval);
+      window.skirkChargeInterval = null;
     }
-    
-    // Convert to hours, minutes, seconds
-    const totalSeconds = Math.ceil(remainingMs / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    
-    let timeText = '';
-    if (hours > 0) {
-      timeText = `${hours}h ${minutes}m ${seconds}s`;
-    } else if (minutes > 0) {
-      timeText = `${minutes}m ${seconds}s`;
-    } else {
-      timeText = `${seconds}s`;
-    }
-    
-    // Calculate current charges (increases over time)
-    const chargesGained = Math.floor(elapsed / data.cooldownMs);
-    const currentCharges = Math.min(data.current + chargesGained, data.max);
-    const chargesText = `${Math.floor(currentCharges)}/${data.max}`;
-    
-    
-    // Berechne das Datum + Uhrzeit
-    const fullChargeTime = new Date(Date.now() + remainingMs);
-    const dateTimeString = fullChargeTime.toLocaleString('de-DE', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-    
-    overlay.updateInnerHTML('bm-user-fullcharge-content', 
-      `Full Charge in <b style="color: #f59e0b;">${timeText}</b> <span style="color: #6b7280; font-size: 0.9em;">(${chargesText})</br>${dateTimeString}</span>`
-    );
+    return;
+  }
+  
+  // Convert to hours, minutes, seconds
+  const totalSeconds = Math.ceil(remainingMs / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  
+  let timeText = '';
+  if (hours > 0) {
+    timeText = `${hours}h ${minutes}m ${seconds}s`;
+  } else if (minutes > 0) {
+    timeText = `${minutes}m ${seconds}s`;
+  } else {
+    timeText = `${seconds}s`;
+  }
+  
+  // Calculate current charges (increases over time)
+  const chargesGained = Math.floor(elapsed / data.cooldownMs);
+  const currentCharges = Math.min(data.current + chargesGained, data.max);
+  const chargesText = `${Math.floor(currentCharges)}/${data.max}`;
+  
+  // Calculate full charge date and time
+  const fullChargeTime = new Date(Date.now() + remainingMs);
+  const dateTimeString = fullChargeTime.toLocaleString('de-DE', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  
+  overlay.updateInnerHTML('bm-user-fullcharge-content', 
+    `Full Charge in <b style="color: #f59e0b;">${timeText}</b> <span style="color: #6b7280; font-size: 0.9em;">(${chargesText}) - ${dateTimeString}</span>`
+  );
+  
+  // Apply visibility setting
+  try {
+    const show = JSON.parse(localStorage.getItem('bmShowFullCharge') ?? 'true');
+    const el = document.getElementById('bm-user-fullcharge');
+    if (el) el.style.display = show ? '' : 'none';
+  } catch(_) {}
+}
     
     // Apply visibility setting
     try {
