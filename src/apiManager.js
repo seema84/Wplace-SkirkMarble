@@ -301,8 +301,24 @@ export default class ApiManager {
     const currentCharges = Math.min(data.current + chargesGained, data.max);
     const chargesText = `${Math.floor(currentCharges)}/${data.max}`;
     
+// Calculate current charges (increases over time)
+    const chargesGained = Math.floor(elapsed / data.cooldownMs);
+    const currentCharges = Math.min(data.current + chargesGained, data.max);
+    const chargesText = `${Math.floor(currentCharges)}/${data.max}`;
+    
+    // 🆕 Berechne das Datum + Uhrzeit
+    const fullChargeTime = new Date(Date.now() + remainingMs);
+    const dateTimeString = fullChargeTime.toLocaleString('de-DE', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    
     overlay.updateInnerHTML('bm-user-fullcharge-content', 
-      `Full Charge in <b style="color: #f59e0b;">${timeText}</b> <span style="color: #6b7280; font-size: 0.9em;">(${chargesText})</span>`
+      `Full Charge in <b style="color: #f59e0b;">${timeText}</b> <span style="color: #6b7280; font-size: 0.9em;">(${chargesText})</br>${dateTimeString}</span>`
     );
     
     // Apply visibility setting
